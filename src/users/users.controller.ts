@@ -1,3 +1,4 @@
+import { User } from './user.entity';
 import { AuthService } from './auth.service';
 import {
   Controller,
@@ -8,15 +9,20 @@ import {
   Get,
   Param,
   Query,
+  Request,
   NotFoundException,
   Session,
   BadRequestException,
+  UseGuards,
+  ForbiddenException,
 } from '@nestjs/common';
 import { CreateUserDTO } from './dtos/create-user-dto';
 import { UpdateUserDTO } from './dtos/update-user-dto';
 import { UsersService } from './users.service';
 import { UserDTO } from './dtos/user.dto';
 import { Serialize } from '../interceptors/serealize.interceptor';
+import { CurrentUser } from './decorators/current-user.decorator';
+import { AuthGaurd } from '../guards/auth.gaurd';
 
 @Controller('auth')
 @Serialize(UserDTO)
@@ -26,11 +32,24 @@ export class UsersController {
     private authService: AuthService,
   ) {}
 
-  @Get('whoami')
-  async whoAmI(@Session() session: any) {
+  @Get('isAuthorized')
+  async isAuthorized(@Session() session: any) {
     const user = await this.userService.findOne(session.userId);
-    if(!user) throw new BadRequestException('not authorized');
-    return user; 
+    if (!user) throw new BadRequestException('not authorized');
+    return user;
+  }
+
+  @Get('whoami')
+  async whoAmI(@CurrentUser() user: User) {
+    return user;
+  }
+
+  @Get('whoami2')
+  async whoAmI2(@Request() request: any) {
+    if (!request.CurrentUser) {
+      throw new ForbiddenException('you are not logged in brother.');
+    }
+    return request.CurrentUser;
   }
 
   @Post('/signup')
@@ -62,6 +81,7 @@ export class UsersController {
   }
 
   @Get()
+  @UseGuards(AuthGaurd)
   findAllUsers(@Query('email') email: string) {
     return this.userService.find(email);
   }

@@ -19,5 +19,5 @@ export async function decryptPassword(
 ): Promise<boolean> {
   const [salt, storedHash] = dbPassword.split('.');
   const hash = (await scrypt(password, salt, 32)) as Buffer;
-  return storedHash !== hash.toString('hex') ? false : true;
+  return storedHash === hash.toString('hex');
 }
