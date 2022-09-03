@@ -50,14 +50,7 @@ describe('auth service', () => {
   });
 
   it('throws an error if user signs w duplicate email', async () => {
-    fakeUserService.find = () =>
-      Promise.resolve([
-        {
-          id: 1,
-          email: 'arpited7@gmail.com',
-          password: 'abcdef',
-        },
-      ]);
+    await service.signup('arpited7@gmail.com', '123');
     try {
       await service.signup('arpited7@gmail.com', '123');
     } catch (err) {
@@ -76,14 +69,7 @@ describe('auth service', () => {
   });
 
   it('throws if an invalid pwd is provided', async () => {
-    fakeUserService.find = () =>
-      Promise.resolve([
-        {
-          id: 1,
-          email: 'arpited7@gmail.com',
-          password: 'abcdef',
-        },
-      ]);
+    await service.signup('abcd@xyz.com', 'kwokds')
     try {
       await service.signin('abcd@xyz.com', 'kwokd');
     } catch (err) {
